@@ -1,9 +1,8 @@
 const router = require("express").Router();
 const articleController = require("../../controllers/articleController");
 
-
 console.log('hi from route file');
-// Matches with "/api/books"
+
 console.log(router.route);
 
 // /articles/articles
@@ -16,7 +15,6 @@ router.route("/saved")
 
 router.route("/:id")
   .get(articleController.findById)
-  // .put(booksController.update)
   .delete(articleController.remove);
 
 // // Matches with "/api/books/:id"

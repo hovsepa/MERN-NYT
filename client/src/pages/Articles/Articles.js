@@ -7,51 +7,48 @@ import { Col, Row, Container } from "../../components/Grid";
 import { List, ListItem } from "../../components/List";
 import { Input, FormBtn, StartDate, EndDate } from "../../components/Form";
 
-class Books extends Component {
+class Articles extends Component {
   state = {
-    // books: [],
     articles: [],
     saved: [],
     title: "",
-    url: ""
+    url: "",
+    start: "",
+    end: ""
   };
 
   componentDidMount() {
     this.loadSavedArticles();
-    // console.log(this.state.saved);
   }
 
   handleFormSubmit = event => {
     event.preventDefault();
     if (this.state.title) {
-      API.searchArticles(this.state.title)
-        // .then(res => this.loadArticles(res))
+      API.searchArticles(this.state.title, (this.state.start).split("-").join(""), (this.state.end).split("-").join(""))
         .then(res => this.setState({ articles: res.data.response.docs }))
         .catch(err => console.log(err))
-        .then(res => console.log(this.state.articles));   
+        .then(res => console.log(this.state.articles));
     }
   };
 
   loadSavedArticles = () => {
-      API.getArticles()
-      .then(res => this.setState({ saved: res.data, title: "", url: ""}))
+    API.getArticles()
+      .then(res => this.setState({ saved: res.data, title: "", url: "" }))
       .catch(err => console.log(err))
       .then(res => console.log(this.state.saved));
   }
 
   saveArticle = (article) => {
-    // console.log("kkjlkjlj")
     console.log(article.headline.main, article.web_url, article.pub_date);
-
+    // disabled={!(this.state.title) || !(this.state.start) || !(this.state.end)}
     API.saveArticle({
       title: article.headline.main,
       url: article.web_url,
       date: article.pub_date
     })
-    .then(res => console.log(res))
-      // then load saved books
-    .catch(err => console.log(err))
-    .then(this.loadSavedArticles);
+      .then(res => console.log(res))
+      .catch(err => console.log(err))
+      .then(this.loadSavedArticles);
   }
 
   deleteArticle = id => {
@@ -61,14 +58,15 @@ class Books extends Component {
       .catch(err => console.log(err));
   };
 
-  searchForArticles = (query, event) => {
-    event.preventDefault();
-    if (this.state.title) {
-      API.searchArticles(this.state.title)
-        .then(res => this.setState({ articles: res.data.response.docs }))
-        .catch(err => console.log(err));
-    }
-  };
+  // searchForArticles = (query, start, end, event) => {
+  //   event.preventDefault();
+  //   if (this.state.title) {
+  //     console.log(this.state.title, this.state.start, this.state.end);
+  //     API.searchArticles(this.state.title, this.state.start, this.state.end)
+  //       .then(res => this.setState({ articles: res.data.response.docs }))
+  //       .catch(err => console.log(err));
+  //   }
+  // };
 
   handleInputChange = event => {
     const { name, value } = event.target;
@@ -82,10 +80,7 @@ class Books extends Component {
       <Container fluid>
         <Row>
           <Col size="md-12">
-            {/* <Jumbotron> */}
             <h1>Search</h1>
-            {/* </Jumbotron> */}
-
             <form>
               <div className="col-md-6">
                 <Input
@@ -96,53 +91,39 @@ class Books extends Component {
                 />
               </div>
               <div className="col-md-3">
-                <StartDate />
+                <StartDate
+                  value={this.state.start}
+                  onChange={this.handleInputChange}
+                  name="start" />
               </div>
               <div className="col-md-3">
-                <EndDate />
+                <EndDate
+                  value={this.state.end}
+                  onChange={this.handleInputChange}
+                  name="end" />
               </div>
               <div className="col-md-12">
                 <FormBtn
-                  disabled={!(this.state.title)}
+                  disabled={!(this.state.title) || !(this.state.start) || !(this.state.end)}
                   onClick={this.handleFormSubmit}>
                   Search Articles
               </FormBtn>
               </div>
-
-
-              {/* <Input
-                value={this.state.author}
-                onChange={this.handleInputChange}
-                name="author"
-                placeholder="Author (required)"
-              />
-              <TextArea
-                value={this.state.synopsis}
-                onChange={this.handleInputChange}
-                name="synopsis"
-                placeholder="Synopsis (Optional)"
-              /> */}
-
             </form>
           </Col>
         </Row>
         <Row>
-          <Col size="md-6">
-            {/* <Jumbotron> */}
+          <Col size="md-12">
             <h1>Results</h1>
-            {/* </Jumbotron> */}
             {this.state.articles.length ? (
               <List>
                 {this.state.articles.map(articles => (
                   <ListItem key={articles._id}>
-                    {/* <Link to={articles.web_url}> */}
                     <a href={articles.web_url} target="_new" >
                       <strong>
                         {articles.headline.main}
                       </strong>
                     </a>
-                    {/* </Link> */}
-                    {/* <SaveBtn onClick={() => {console.log(this);}} /> */}
                     <SaveBtn onClick={() => this.saveArticle(articles)} />
                     <DeleteBtn onClick={() => this.saveArticle(articles)} />
                   </ListItem>
@@ -154,21 +135,17 @@ class Books extends Component {
           </Col>
         </Row>
         <Row>
-          <Col size="md-6">
-            {/* <Jumbotron> */}
+          <Col size="md-12">
             <h1>Saved</h1>
-            {/* </Jumbotron> */}
             {this.state.saved.length ? (
               <List>
                 {this.state.saved.map(article => (
                   <ListItem key={article._id}>
-                    {/* <Link to={"/books/" + article._id}> */}
                     <a href={article.url} target="_new" >
-                    <strong>
-                      {article.title}
-                    </strong>
-                  </a>
-                    {/* </Link> */}
+                      <strong>
+                        {article.title}
+                      </strong>
+                    </a>
                     <DeleteBtn onClick={() => this.deleteArticle(article._id)} />
                   </ListItem>
                 ))}
@@ -186,4 +163,4 @@ class Books extends Component {
   }
 }
 
-export default Books;
+export default Articles;

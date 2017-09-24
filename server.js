@@ -20,9 +20,7 @@ mongoose.Promise = global.Promise;
 // Connect to the Mongo DB
 mongoose.connect(
   process.env.MONGODB_URI || "mongodb://localhost/nytscrub",
-  {
-    useMongoClient: true
-  }
+  { useMongoClient: true }
 );
 
 // Start the API server
