@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import DeleteBtn from "../../components/DeleteBtn";
+import { DeleteBtn, SaveBtn } from "../../components/DeleteBtn";
 // import Jumbotron from "../../components/Jumbotron";
 import API from "../../utils/API";
 import { Link } from "react-router-dom";
@@ -9,38 +9,48 @@ import { Input, TextArea, FormBtn, StartDate, EndDate } from "../../components/F
 
 class Books extends Component {
   state = {
-    books: [],
+    // books: [],
     articles: [],
     title: ""
   };
 
   componentDidMount() {
-    this.loadArticles();
+    // this.loadSavedArticles();
   }
 
-  loadArticles = (res) => {
-    // event.preventDefault();
-    if (res) {
-      // console.log(res.data.response.docs)
-      this.setState({ articles: res.data.response.docs, title: "" })
-      console.log(this.state.articles)
+  handleFormSubmit = event => {
+    event.preventDefault();
+    if (this.state.title) {
+      API.searchArticles(this.state.title)
+        // .then(res => this.loadArticles(res))
+        .then(res => this.setState({ articles: res.data.response.docs }))
+        .catch(err => console.log(err))
+        .then(res => console.log(this.state.articles));   
     }
-  }
+  };
+
+  // loadSavedArticles = (res) => {
+  //   // event.preventDefault();
+  //   if (res) {
+  //     // console.log(res.data.response.docs)
+  //     this.setState({ articles: res.data.response.docs })
+  //     console.log(this.state.articles)
+  //   }
+  // }
 
   saveArticle = (article) => {
-    console.log("Title: " + article.title);
-    console.log("url: " + article.url);
-    API.saveArticle({ title: article.title, url: article.url })
+    // console.log("kkjlkjlj")
+    console.log(article.headline.main, article.web_url, article.pub_date);
+
+    API.saveArticle({
+      title: article.headline.main,
+      url: article.web_url,
+      date: article.pub_date
+    })
+    .then(res => console.log(res))
       // then load saved books
       .catch(err => console.log(err));
   }
-
-  // loadArticles = (res) => {
-  //   res => this.setState({ articles: res.data.response.docs })
-
-  //   console.log(res);
-  //   console.log(this.state.articles)
-  // };
 
   // deleteBook = id => {
   //   API.deleteBook(id)
@@ -51,10 +61,8 @@ class Books extends Component {
   searchForArticles = (query, event) => {
     event.preventDefault();
     if (this.state.title) {
-      API.searchArticles(query)
-        .then(
-        res => this.setState({ articles: res.data.response.docs })
-        )
+      API.searchArticles(this.state.title)
+        .then(res => this.setState({ articles: res.data.response.docs }))
         .catch(err => console.log(err));
     }
   };
@@ -66,16 +74,7 @@ class Books extends Component {
     });
   };
 
-  handleFormSubmit = event => {
-    event.preventDefault();
-    if (this.state.title) {
-      API.searchArticles({
-        query: this.state.title
-      })
-        .then(res => this.loadArticles(res))
-        .catch(err => console.log(err));
-    }
-  };
+  
 
   render() {
     return (
@@ -131,16 +130,20 @@ class Books extends Component {
             {/* <Jumbotron> */}
             <h1>Results</h1>
             {/* </Jumbotron> */}
-            {this.state.books.length ? (
+            {this.state.articles.length ? (
               <List>
-                {this.state.books.map(book => (
-                  <ListItem key={book._id}>
-                    <Link to={"/books/" + book._id}>
+                {this.state.articles.map(articles => (
+                  <ListItem key={articles.headline.main}>
+                    {/* <Link to={articles.web_url}> */}
+                    <a href={articles.web_url} target="_new" >
                       <strong>
-                        {book.title} by {book.author}
+                        {articles.headline.main}
                       </strong>
-                    </Link>
-                    <DeleteBtn onClick={() => this.saveBook(book._id)} />
+                    </a>
+                    {/* </Link> */}
+                    {/* <SaveBtn onClick={() => {console.log(this);}} /> */}
+                    <SaveBtn onClick={() => this.saveArticle(articles)} />
+                    <DeleteBtn onClick={() => this.saveArticle(articles)} />
                   </ListItem>
                 ))}
               </List>
@@ -154,16 +157,16 @@ class Books extends Component {
             {/* <Jumbotron> */}
             <h1>Saved</h1>
             {/* </Jumbotron> */}
-            {this.state.books.length ? (
+            {this.state.articles.length ? (
               <List>
-                {this.state.books.map(book => (
-                  <ListItem key={book._id}>
-                    <Link to={"/books/" + book._id}>
+                {this.state.articles.map(article => (
+                  <ListItem key={article._id}>
+                    <Link to={"/books/" + article._id}>
                       <strong>
-                        {book.title} by {book.author}
+                        {article.headline.main}
                       </strong>
                     </Link>
-                    <DeleteBtn onClick={() => this.deleteBook(book._id)} />
+                    <DeleteBtn onClick={() => this.deleteArticle(article._id)} />
                   </ListItem>
                 ))}
               </List>
