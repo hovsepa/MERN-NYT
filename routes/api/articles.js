@@ -14,6 +14,11 @@ router.route("/saved")
   .get(articleController.findAll)
   .post(articleController.create);
 
+router.route("/:id")
+  .get(articleController.findById)
+  // .put(booksController.update)
+  .delete(articleController.remove);
+
 // // Matches with "/api/books/:id"
 // router.route("/:id")
 //   .get(articleController.findById)

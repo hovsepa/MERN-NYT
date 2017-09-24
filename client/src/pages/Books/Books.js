@@ -2,20 +2,23 @@ import React, { Component } from "react";
 import { DeleteBtn, SaveBtn } from "../../components/DeleteBtn";
 // import Jumbotron from "../../components/Jumbotron";
 import API from "../../utils/API";
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
 import { Col, Row, Container } from "../../components/Grid";
 import { List, ListItem } from "../../components/List";
-import { Input, TextArea, FormBtn, StartDate, EndDate } from "../../components/Form";
+import { Input, FormBtn, StartDate, EndDate } from "../../components/Form";
 
 class Books extends Component {
   state = {
     // books: [],
     articles: [],
-    title: ""
+    saved: [],
+    title: "",
+    url: ""
   };
 
   componentDidMount() {
-    // this.loadSavedArticles();
+    this.loadSavedArticles();
+    // console.log(this.state.saved);
   }
 
   handleFormSubmit = event => {
@@ -29,14 +32,12 @@ class Books extends Component {
     }
   };
 
-  // loadSavedArticles = (res) => {
-  //   // event.preventDefault();
-  //   if (res) {
-  //     // console.log(res.data.response.docs)
-  //     this.setState({ articles: res.data.response.docs })
-  //     console.log(this.state.articles)
-  //   }
-  // }
+  loadSavedArticles = () => {
+      API.getArticles()
+      .then(res => this.setState({ saved: res.data, title: "", url: ""}))
+      .catch(err => console.log(err))
+      .then(res => console.log(this.state.saved));
+  }
 
   saveArticle = (article) => {
     // console.log("kkjlkjlj")
@@ -49,14 +50,16 @@ class Books extends Component {
     })
     .then(res => console.log(res))
       // then load saved books
-      .catch(err => console.log(err));
+    .catch(err => console.log(err))
+    .then(this.loadSavedArticles);
   }
 
-  // deleteBook = id => {
-  //   API.deleteBook(id)
-  //     .then(res => this.loadArticles())
-  //     .catch(err => console.log(err));
-  // };
+  deleteArticle = id => {
+    console.log(id);
+    API.deleteArticle(id)
+      .then(res => this.loadSavedArticles())
+      .catch(err => console.log(err));
+  };
 
   searchForArticles = (query, event) => {
     event.preventDefault();
@@ -73,8 +76,6 @@ class Books extends Component {
       [name]: value
     });
   };
-
-  
 
   render() {
     return (
@@ -126,14 +127,14 @@ class Books extends Component {
           </Col>
         </Row>
         <Row>
-          <Col size="md-12">
+          <Col size="md-6">
             {/* <Jumbotron> */}
             <h1>Results</h1>
             {/* </Jumbotron> */}
             {this.state.articles.length ? (
               <List>
                 {this.state.articles.map(articles => (
-                  <ListItem key={articles.headline.main}>
+                  <ListItem key={articles._id}>
                     {/* <Link to={articles.web_url}> */}
                     <a href={articles.web_url} target="_new" >
                       <strong>
@@ -153,19 +154,21 @@ class Books extends Component {
           </Col>
         </Row>
         <Row>
-          <Col size="md-12">
+          <Col size="md-6">
             {/* <Jumbotron> */}
             <h1>Saved</h1>
             {/* </Jumbotron> */}
-            {this.state.articles.length ? (
+            {this.state.saved.length ? (
               <List>
-                {this.state.articles.map(article => (
+                {this.state.saved.map(article => (
                   <ListItem key={article._id}>
-                    <Link to={"/books/" + article._id}>
-                      <strong>
-                        {article.headline.main}
-                      </strong>
-                    </Link>
+                    {/* <Link to={"/books/" + article._id}> */}
+                    <a href={article.url} target="_new" >
+                    <strong>
+                      {article.title}
+                    </strong>
+                  </a>
+                    {/* </Link> */}
                     <DeleteBtn onClick={() => this.deleteArticle(article._id)} />
                   </ListItem>
                 ))}
